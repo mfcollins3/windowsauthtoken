@@ -45,7 +45,7 @@ import (
 func main() {
     // TODO: register HTTP handlers with net/http
     
-    rootHandler := windowsauthtoken.WindowsAuthTokenHandler(
+    rootHandler := windowsauthtoken.Handler(
         http.DefaultServeMux,
         func(username string) error {
             // Store username somewhere for the request. For example,
