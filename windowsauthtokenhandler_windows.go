@@ -82,18 +82,21 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	defer token.Close()
 
-	username, err := getWindowsUsername(token)
-	if nil != err {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	if 0 != token {
+		defer token.Close()
 
-	err = h.callback(username)
-	if nil != err {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		username, err := getWindowsUsername(token)
+		if nil != err {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		err = h.callback(username)
+		if nil != err {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
 	h.next.ServeHTTP(w, r)
