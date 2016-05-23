@@ -52,7 +52,7 @@ func main() {
             // you can use Gorilla Toolkit's context package to store
             // the username in the request.
             return nil
-        })
+        }, TokenUsername)
     log.Fatal(http.ListenAndServe(":8080", rootHandler))    
 }
 
