@@ -3,6 +3,7 @@ Windows Authentication Handler for Go
 
 [![Build Status](https://travis-ci.org/mfcollins3/windowsauthtoken.svg?branch=master)](https://travis-ci.org/mfcollins3/windowsauthtoken)
 [![Build status](https://ci.appveyor.com/api/projects/status/m581rwjfq5bby3s2/branch/master?svg=true)](https://ci.appveyor.com/project/mfcollins3/windowsauthtoken/branch/master)
+[![GoDoc](https://godoc.org/github.com/mfcollins3/windowsauthtoken?status.svg)](https://godoc.org/github.com/mfcollins3/windowsauthtoken)
 
 Package `windowsauthtoken` implements Go HTTP middleware that will
 extract the username of a Windows user when running a Go web application
