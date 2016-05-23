@@ -20,27 +20,20 @@
 
 package windowsauthtoken
 
-import (
-	"net/http"
-	"net/http/httptest"
-	"testing"
+// TokenValue is an enumeration that specifies which user token value should
+// be passed to the callback handler by the Windows authentication token
+// handler. The current options are either to send the DOMAIN\Username vale
+// or the user's SID to the callback handler.
+type TokenValue int
+
+const (
+	// TokenUsername indicates that the Windows authentication token handler
+	// will invoke the callback handler with the Windows username
+	// (DOMAIN\Username) for the authenticated user.
+	TokenUsername TokenValue = iota
+
+	// TokenSid indicates that the Windows authentication token handler will
+	// invoke the callback handler with the authenticated user's SID as a
+	// string.
+	TokenSid
 )
-
-func TestHandlerInvokesNextHandler(t *testing.T) {
-	calls := 0
-	handlerSpy := func(w http.ResponseWriter, r *http.Request) {
-		calls++
-	}
-
-	responseRecorder := httptest.NewRecorder()
-	request, _ := http.NewRequest("GET", "/", nil)
-
-	handler := Handler(http.HandlerFunc(handlerSpy), func(_ string) error {
-		return nil
-	}, TokenUsername)
-	handler.ServeHTTP(responseRecorder, request)
-
-	if 1 != calls {
-		t.Error("The next handler was not called")
-	}
-}

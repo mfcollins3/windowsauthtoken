@@ -21,10 +21,10 @@
 package windowsauthtoken
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
-	"unicode/utf16"
 
 	"golang.org/x/sys/windows"
 )
@@ -49,31 +49,27 @@ func getWindowsUsername(token windows.Token) (string, error) {
 		return "", err
 	}
 
-	var usernameLength uint32 = 100
-	var domainNameLength uint32 = 100
-	usernameChars := make([]uint16, usernameLength)
-	domainNameChars := make([]uint16, domainNameLength)
-	var use uint32
-	err = windows.LookupAccountSid(
-		nil,
-		user.User.Sid,
-		&usernameChars[0],
-		&usernameLength,
-		&domainNameChars[0],
-		&domainNameLength,
-		&use)
+	username, domainName, _, err := user.User.Sid.LookupAccount("")
 	if nil != err {
 		return "", err
 	}
 
-	username := string(utf16.Decode(usernameChars[0:usernameLength]))
-	domainName := string(utf16.Decode(domainNameChars[0:domainNameLength]))
 	return fmt.Sprintf("%s\\%s", domainName, username), nil
 }
 
+func getSid(token windows.Token) (string, error) {
+	user, err := token.GetTokenUser()
+	if nil != err {
+		return "", err
+	}
+
+	return user.User.Sid.String()
+}
+
 type handler struct {
-	next     http.Handler
-	callback Callback
+	next       http.Handler
+	callback   Callback
+	tokenValue TokenValue
 }
 
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -86,13 +82,22 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if 0 != token {
 		defer token.Close()
 
-		username, err := getWindowsUsername(token)
+		var tokenValue string
+		switch h.tokenValue {
+		case TokenUsername:
+			tokenValue, err = getWindowsUsername(token)
+		case TokenSid:
+			tokenValue, err = getSid(token)
+		default:
+			err = errors.New("Unrecognized TokenValue")
+		}
+
 		if nil != err {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		err = h.callback(username)
+		err = h.callback(tokenValue)
 		if nil != err {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -107,6 +112,6 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // X-IIS-WindowsAuthToken HTTP header. Handler will obtain the Windows
 // username for the authenticated user and will pass the username to
 // the web application using the callback parameter.
-func Handler(next http.Handler, callback Callback) http.Handler {
-	return &handler{next, callback}
+func Handler(next http.Handler, callback Callback, tokenValue TokenValue) http.Handler {
+	return &handler{next, callback, tokenValue}
 }

@@ -37,6 +37,6 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // X-IIS-WindowsAuthToken HTTP header. Handler will obtain the Windows
 // username for the authenticated user and will pass the username to
 // the web application using the callback parameter.
-func Handler(next http.Handler, callback Callback) http.Handler {
+func Handler(next http.Handler, callback Callback, tokenValue TokenValue) http.Handler {
 	return &handler{next}
 }
