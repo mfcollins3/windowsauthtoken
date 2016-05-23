@@ -1,0 +1,11 @@
+version: '0.1.0+{build}'
+clone_folder: c:\projects\src\github.com\mfcollins3\windowsauthtoken
+environment:
+  GOPATH: c:\projects
+
+build_script:
+  - go build github.com/mfcollins3/windowsauthtoken
+  
+test_script:
+  - go test -v github.com/mfcollins3/windowsauthtoken
+  
